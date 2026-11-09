@@ -1,0 +1,41 @@
+name: notify
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: notify
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Send notifications
+        run: node run.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
+          VAPID_PUBLIC: BH4ZBqyPlxp6a7F9sD7FxXUtXj5XR6N9z4WQ2xZ8Kfl2ssCSYMhb00l4SaFyFljOrnaqKbJJvuzHWVRuLtkkwRI
+          VAPID_SUBJECT: https://my-reseller-69489.web.app
+          APP_URL: https://my-reseller-69489.web.app
+          APP_TZ: '+05:30'
+      - name: Keep this repository active (GitHub pauses idle ones after 60 days)
+        run: |
+          last=$(git log -1 --format=%ct); now=$(date +%s)
+          if [ $((now-last)) -gt 3888000 ]; then
+            git config user.name "bot"; git config user.email "bot@users.noreply.github.com"
+            git commit --allow-empty -m "keep alive"; git push
+          fi
