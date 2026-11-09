@@ -4,7 +4,7 @@ const webpush = require('web-push');
 const { tick } = require('./core');
 
 admin.initializeApp({ credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
-webpush.setVapidDetails(process.env.VAPID_SUBJECT, process.env.VAPID_PUBLIC, process.env.VAPID_PRIVATE);
+webpush.setVapidDetails(process.env.VAPID_SUBJECT, process.env.VAPID_PUBLIC.trim(), process.env.VAPID_PRIVATE.replace(/[\s"'=]/g, ''));
 
 tick({
   db: admin.firestore(),
